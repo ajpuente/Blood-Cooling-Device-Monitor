@@ -1,7 +1,13 @@
 <resources>
-    <string name="app_name">BloodCoolingMonitor</string>
+    <string name="app_name">Blood Cooling Monitor</string>
     <string name="done">Done</string>
     <string name="start">Start</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="bluetooth_on">Turn on Bluetooth</string>
+    <string name="bluetooth_on_toast">Enabled Bluetooth</string>
+    <string name="bluetooth_already_on_toast">Bluetooth already enabled</string>
+    <string name="bluetooth_off">Turn off Bluetooth</string>
+    <string name="bluetooth_off_toast">Disabled Bluetooth</string>
+    <string name="bluetooth_already_off_toast">Bluetooth already disabled</string>
 </resources>
