@@ -1,13 +1,29 @@
 <resources>
+    <!-- Application Strings -->
     <string name="app_name">Blood Cooling Monitor</string>
+    <string name="timer">Timer</string>
     <string name="done">Done</string>
     <string name="start">Start</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="reset">Reset</string>
+    <string name="controls_tab">Controls</string>
+    <string name="sensors_tab">Sensors</string>
+
+    <string name="coolant_temp_label">Temp. of coolant</string>
+    <string name="user_temp_label">Temp. of user</string>
+    <string name="cooling_power_label">Power level</string>
+
+    <string name="uuid">73121cc2-6941-4d63-ac52-a2b441d6c27d</string>
+
+    <!-- Bluetooth Strings -->
     <string name="bluetooth_on">Turn on Bluetooth</string>
+    <string name="bluetooth_device_connect">Connect to device</string>
     <string name="bluetooth_on_toast">Enabled Bluetooth</string>
     <string name="bluetooth_already_on_toast">Bluetooth already enabled</string>
     <string name="bluetooth_off">Turn off Bluetooth</string>
     <string name="bluetooth_off_toast">Disabled Bluetooth</string>
     <string name="bluetooth_already_off_toast">Bluetooth already disabled</string>
+    <string name="bluetooth_missing">Bluetooth adapter not found. Application will not function
+                                    correctly</string>
 </resources>

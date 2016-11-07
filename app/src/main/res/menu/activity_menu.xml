@@ -9,4 +9,9 @@
         android:id="@+id/menu_bluetooth_off"
         android:orderInCategory="2"
         android:title="@string/bluetooth_off"/>
+    <item
+        android:id="@+id/menu_connect_device"
+        android:orderInCategory="3"
+        android:title="@string/bluetooth_device_connect"/>
+
 </menu>
