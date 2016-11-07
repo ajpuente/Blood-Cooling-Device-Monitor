@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,15 +38,15 @@ public class MainActivity extends AppCompatActivity {
                     timer = createCountdownTimer(180000);
                 }
                 Button b = (Button) view;
-                if(b.getText().toString().contains("tart")) {
-                    b.setText("Pause");
+                if(b.getText().toString().contains(getString(R.string.start))) {
+                    b.setText(getString(R.string.pause));
                     timer.start();
-                } else if(b.getText().toString().contains("Resume")) {
-                    b.setText("Pause");
+                } else if(b.getText().toString().contains(getString(R.string.resume))) {
+                    b.setText(getString(R.string.pause));
                     timer = createCountdownTimer(savedTime);
                     timer.start();
                 } else {
-                    b.setText("Resume");
+                    b.setText(getString(R.string.resume));
                     timer.cancel();
                 }
             }
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                     timer = null;
                 }
                 timerText.setText(formatTime(180000));
-                startStopButton.setText("Start");
+                startStopButton.setText(getString(R.string.start));
             }
         });
     }
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
-                timerText.setText("Done");
+                timerText.setText(getString(R.string.done));
             }
         };
     }
@@ -97,10 +98,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String formatTime(long millis) {
-        return String.format("%02d:%02d:%02d",
+        return String.format(Locale.getDefault(), "%02d:%02d:%02d",
                 TimeUnit.MILLISECONDS.toHours(millis),
                 TimeUnit.MILLISECONDS.toMinutes(millis) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), // The change is in this line
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
                 TimeUnit.MILLISECONDS.toSeconds(millis) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
     }
