@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
             return false;
         }
+        pairedDevices = adapter.getBondedDevices();
         getMenuInflater().inflate(R.menu.activity_menu, menu);
         return true;
     }
@@ -64,8 +66,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.menu_bluetooth_on:
                 if (!adapter.isEnabled()) {
-                    Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(turnOn, 0);
+                    adapter.enable();
                     Toast.makeText(getApplicationContext(), getString(R.string.bluetooth_on_toast),
                             Toast.LENGTH_LONG).show();
                 } else {
@@ -84,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             case R.id.menu_connect_device:
+                if (pairedDevices.size() > 0) {
+                    connect = new BluetoothConnectThread((BluetoothDevice)pairedDevices.toArray()[0]);
+                    connect.start();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -178,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what) {
                 case Constants.MESSAGE_READ:
                     String message = new String(writeBuffer);
-                    message = message.substring(begin, end);
+                    Log.d("Monitor", message);
                     break;
             }
         }
