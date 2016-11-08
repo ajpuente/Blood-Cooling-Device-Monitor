@@ -3,13 +3,14 @@ package com.captstone.bloodcoolingmonitor;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
-import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +22,11 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -33,10 +38,14 @@ public class MainActivity extends AppCompatActivity {
     TabHost tabHost;
     long savedTime;
 
+    private CountDownTimer timer;
     private BluetoothAdapter adapter;
     private Set<BluetoothDevice> pairedDevices;
     private BluetoothConnectThread connect;
     private BluetoothConnectedThread connected;
+
+    private SparseArray<TextView> resultFields;
+    private int[] resultFieldIDs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +53,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         timerText = (TextView) findViewById(R.id.timerTextView);
+
+
+        resultFieldIDs = new int[]{R.id.peltierTextField, R.id.pumpField, R.id.therm1TempField,
+                R.id.therm2TempField, R.id.therm3TempField, R.id.irTempField};
+        resultFields = new SparseArray<>();
+        for (int resultFieldID : resultFieldIDs) {
+            resultFields.put(resultFieldID, (TextView) findViewById(resultFieldID));
+        }
+
         setupButtons();
         setupTabs();
     }
@@ -86,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_connect_device:
                 if (pairedDevices.size() > 0) {
-                    connect = new BluetoothConnectThread((BluetoothDevice)pairedDevices.toArray()[0]);
+                    connect = new BluetoothConnectThread((BluetoothDevice) pairedDevices.toArray()[0]);
                     connect.start();
                 }
                 return true;
@@ -94,8 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    CountDownTimer timer;
 
     public void setupButtons() {
         startStopButton = (Button) findViewById(R.id.startStop);
@@ -182,8 +198,19 @@ public class MainActivity extends AppCompatActivity {
             int end = msg.arg2;
             switch (msg.what) {
                 case Constants.MESSAGE_READ:
-                    String message = new String(writeBuffer);
+                    String message;
+                    String[] statuses;
+                    try {
+                        message = new String(writeBuffer, "UTF-8");
+                        message = message.substring(begin, end);
+                    } catch (UnsupportedEncodingException e) {
+                        break;
+                    }
                     Log.d("Monitor", message);
+                    statuses = message.split(",");
+                    for (int i = 0; i < resultFieldIDs.length; i++) {
+                        resultFields.get(resultFieldIDs[i]).setText(statuses[i]);
+                    }
                     break;
             }
         }
@@ -255,10 +282,10 @@ public class MainActivity extends AppCompatActivity {
             byte[] buffer = new byte[1024];
             int bytes;
 
-            while(true) {
+            while (true) {
                 try {
                     bytes = inputStream.read(buffer);
-                    handler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    handler.obtainMessage(Constants.MESSAGE_READ, 0, bytes, buffer).sendToTarget();
                 } catch (IOException e) {
                     break;
                 }

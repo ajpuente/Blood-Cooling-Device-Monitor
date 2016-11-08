@@ -10,9 +10,12 @@
     <string name="controls_tab">Controls</string>
     <string name="sensors_tab">Sensors</string>
 
-    <string name="coolant_temp_label">Temp. of coolant</string>
-    <string name="user_temp_label">Temp. of user</string>
-    <string name="cooling_power_label">Power level</string>
+    <string name="peltier_power_label">Peltier power level</string>
+    <string name="pump_power_label">Pump power level</string>
+    <string name="therm1_temp_label">Thermistor 1 temp</string>
+    <string name="therm2_temp_label">Thermistor 2 temp</string>
+    <string name="therm3_temp_label">Thermistor 3 temp</string>
+    <string name="ir_temp_label">IR temp</string>
 
     <string name="uuid">73121cc2-6941-4d63-ac52-a2b441d6c27d</string>
 
