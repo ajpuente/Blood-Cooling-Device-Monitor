@@ -31,4 +31,13 @@
     <string name="bluetooth_already_off_toast">Bluetooth already disabled</string>
     <string name="bluetooth_missing">Bluetooth adapter not found. Application will not function
                                     correctly</string>
+    <string name="connected_device_string">Connected to device</string>
+    <string name="connect_menu_title">Connect to device</string>
+    <string name="disconnected_device_string">Disconnected from device</string>
+    <string name="disconnect_menu_title">Disconnect from device</string>
+    <string name="pair_device_message">The device needs to be paired to Android prior to connecting</string>
+    <string name="turn_on_bluetooth_request">Please enable Bluetooth</string>
+
+    <string name="status_connected">Status: Connected</string>
+    <string name="status_disconnected">Status: Disconnected</string>
 </resources>

@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
 
     Button startStopButton, resetButton;
-    TextView timerText;
+    TextView timerText, statusText;
     TabHost tabHost;
     long savedTime;
 
@@ -42,13 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private SparseArray<TextView> resultFields;
     private int[] resultFieldIDs;
 
+    private Menu menu;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         timerText = (TextView) findViewById(R.id.timerTextView);
-
+        statusText = (TextView) findViewById(R.id.statusLabel);
 
         resultFieldIDs = new int[]{R.id.peltierTextField, R.id.pumpField, R.id.therm1TempField,
                 R.id.therm2TempField, R.id.therm3TempField, R.id.irTempField};
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         }
         pairedDevices = adapter.getBondedDevices();
         getMenuInflater().inflate(R.menu.activity_menu, menu);
+        this.menu = menu;
         return true;
     }
 
@@ -98,9 +101,36 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             case R.id.menu_connect_device:
-                if (pairedDevices.size() > 0) {
-                    connect = new BluetoothConnectThread((BluetoothDevice) pairedDevices.toArray()[0]);
+                if(!adapter.isEnabled()) {
+                    Toast.makeText(getApplicationContext(), getString(R.string.turn_on_bluetooth_request),
+                            Toast.LENGTH_LONG).show();
+                    return true;
+                }
+                if (item.getTitle().toString().equals(getString(R.string.disconnect_menu_title))) {
+                    if (connected != null && connected.isAlive()) {
+                        connected.cancel();
+                        connected.interrupt();
+                    }
+                    return true;
+                }
+                pairedDevices = adapter.getBondedDevices();
+                BluetoothDevice arduino = null;
+                for (BluetoothDevice device : pairedDevices) {
+                    if (device.getName().equals("HC-06")) {
+                        arduino = device;
+                        break;
+                    }
+                }
+                if (arduino != null && item.getTitle().toString().equals(getString(R.string.connect_menu_title))) {
+                    if (connect != null && connect.isAlive()) {
+                        connect.cancel();
+                        connect.interrupt();
+                    }
+                    connect = new BluetoothConnectThread(arduino);
                     connect.start();
+                } else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.pair_device_message),
+                            Toast.LENGTH_LONG).show();
                 }
                 return true;
             default:
@@ -188,11 +218,13 @@ public class MainActivity extends AppCompatActivity {
     private final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            byte[] writeBuffer = (byte[]) msg.obj;
-            int begin = msg.arg1;
-            int end = msg.arg2;
+
             switch (msg.what) {
                 case Constants.MESSAGE_READ:
+                    byte[] writeBuffer = (byte[]) msg.obj;
+                    int begin = msg.arg1;
+                    int end = msg.arg2;
+
                     String message;
                     String[] statuses;
                     message = new String(writeBuffer);
@@ -202,6 +234,20 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < resultFieldIDs.length; i++) {
                         resultFields.get(resultFieldIDs[i]).setText(statuses[i]);
                     }
+                    break;
+                case Constants.MENU_TO_CONNECT:
+                    MenuItem disconnectMenu = menu.findItem(R.id.menu_connect_device);
+                    disconnectMenu.setTitle(R.string.connect_menu_title);
+                    Toast.makeText(getApplicationContext(), getString(R.string.disconnected_device_string),
+                            Toast.LENGTH_LONG).show();
+                    statusText.setText(getString(R.string.status_disconnected));
+                    break;
+                case Constants.MENU_TO_DISCONNECT:
+                    MenuItem connectMenu = menu.findItem(R.id.menu_connect_device);
+                    connectMenu.setTitle(R.string.disconnect_menu_title);
+                    Toast.makeText(getApplicationContext(), getString(R.string.connected_device_string),
+                            Toast.LENGTH_LONG).show();
+                    statusText.setText(getString(R.string.status_connected));
                     break;
             }
         }
@@ -219,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                 temp = btDevice.createRfcommSocketToServiceRecord(UUID.fromString(
                         getString(R.string.uuid)));
             } catch (IOException e) {
-
+                Log.d("Monitor", e.toString());
             }
             this.btSocket = temp;
         }
@@ -232,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     btSocket.close();
                 } catch (IOException closeException) {
-
+                    Log.d("Monitor", closeException.toString());
                 }
                 return;
             }
@@ -244,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 btSocket.close();
             } catch (IOException e) {
-
+                Log.d("Monitor", e.toString());
             }
         }
     }
@@ -263,36 +309,46 @@ public class MainActivity extends AppCompatActivity {
                 tempInput = socket.getInputStream();
                 tempOutput = socket.getOutputStream();
             } catch (IOException e) {
-
+                Log.d("Monitor", e.toString());
             }
             this.inputStream = tempInput;
             this.outputStream = tempOutput;
         }
 
         public void run() {
-            byte[] buffer = new byte[1024];
-            int bytes;
+            try {
+                handler.obtainMessage(Constants.MENU_TO_DISCONNECT).sendToTarget();
+                byte[] buffer = new byte[1024];
 
-            while (true) {
-                try {
-                    int i = 0;
-                    while (i < 29) {
-                        buffer[i] = (byte) inputStream.read();
-                        i++;
+                while (true) {
+                    try {
+                        /**int i = 0;
+                        while (i < 29) {
+                            buffer[i] = (byte) inputStream.read();
+                            i++;
+                        }*/
+                        int i = 0;
+                        while (i < 26) {
+                            buffer[i] = (byte) inputStream.read();
+                            i++;
+                        }
+                        handler.obtainMessage(Constants.MESSAGE_READ, 0, 26, buffer).sendToTarget();
+                    } catch (IOException e) {
+                        Log.d("Monitor", e.toString());
+                        break;
                     }
-                    handler.obtainMessage(Constants.MESSAGE_READ, 0, 29, buffer).sendToTarget();
-                } catch (IOException e) {
-                    Log.d("Monitor", "IOException");
-                    break;
                 }
+            } catch (Exception e) {
+                handler.obtainMessage(Constants.MENU_TO_CONNECT).sendToTarget();
             }
+            handler.obtainMessage(Constants.MENU_TO_CONNECT).sendToTarget();
         }
 
         public void write(byte[] bytes) {
             try {
                 outputStream.write(bytes);
             } catch (IOException e) {
-
+                Log.d("Monitor", e.toString());
             }
         }
 
@@ -300,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 btSocket.close();
             } catch (IOException e) {
-
+                Log.d("Monitor", e.toString());
             }
         }
     }
