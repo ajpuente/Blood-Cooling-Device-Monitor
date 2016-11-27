@@ -17,7 +17,9 @@
     <string name="therm3_temp_label">Thermistor 3 temp</string>
     <string name="ir_temp_label">IR temp</string>
 
-    <string name="uuid">73121cc2-6941-4d63-ac52-a2b441d6c27d</string>
+    <string name="uuid">00001101-0000-1000-8000-00805f9b34fb</string>
+
+    <string name="bluetooth_module_name">HC-06</string>
 
     <!-- Bluetooth Strings -->
     <string name="bluetooth_on">Turn on Bluetooth</string>

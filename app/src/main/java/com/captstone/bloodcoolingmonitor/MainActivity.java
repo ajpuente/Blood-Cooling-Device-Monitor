@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
@@ -22,11 +21,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -200,12 +195,8 @@ public class MainActivity extends AppCompatActivity {
                 case Constants.MESSAGE_READ:
                     String message;
                     String[] statuses;
-                    try {
-                        message = new String(writeBuffer, "UTF-8");
-                        message = message.substring(begin, end);
-                    } catch (UnsupportedEncodingException e) {
-                        break;
-                    }
+                    message = new String(writeBuffer);
+                    message = message.substring(begin, end);
                     Log.d("Monitor", message);
                     statuses = message.split(",");
                     for (int i = 0; i < resultFieldIDs.length; i++) {
@@ -284,9 +275,14 @@ public class MainActivity extends AppCompatActivity {
 
             while (true) {
                 try {
-                    bytes = inputStream.read(buffer);
-                    handler.obtainMessage(Constants.MESSAGE_READ, 0, bytes, buffer).sendToTarget();
+                    int i = 0;
+                    while (i < 29) {
+                        buffer[i] = (byte) inputStream.read();
+                        i++;
+                    }
+                    handler.obtainMessage(Constants.MESSAGE_READ, 0, 29, buffer).sendToTarget();
                 } catch (IOException e) {
+                    Log.d("Monitor", "IOException");
                     break;
                 }
             }
