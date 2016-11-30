@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -101,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             case R.id.menu_connect_device:
-                if(!adapter.isEnabled()) {
+                if (!adapter.isEnabled()) {
                     Toast.makeText(getApplicationContext(), getString(R.string.turn_on_bluetooth_request),
                             Toast.LENGTH_LONG).show();
                     return true;
@@ -258,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         private final BluetoothSocket btSocket;
         private final BluetoothDevice btDevice;
 
-        public BluetoothConnectThread(BluetoothDevice device) {
+        BluetoothConnectThread(BluetoothDevice device) {
             BluetoothSocket temp = null;
             this.btDevice = device;
             try {
@@ -286,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
             connected.start();
         }
 
-        public void cancel() {
+        void cancel() {
             try {
                 btSocket.close();
             } catch (IOException e) {
@@ -299,20 +298,20 @@ public class MainActivity extends AppCompatActivity {
 
         private final BluetoothSocket btSocket;
         private final InputStream inputStream;
-        private final OutputStream outputStream;
+        //private final OutputStream outputStream;
 
-        public BluetoothConnectedThread(BluetoothSocket socket) {
+        BluetoothConnectedThread(BluetoothSocket socket) {
             this.btSocket = socket;
             InputStream tempInput = null;
-            OutputStream tempOutput = null;
+            //OutputStream tempOutput = null;
             try {
                 tempInput = socket.getInputStream();
-                tempOutput = socket.getOutputStream();
+                //tempOutput = socket.getOutputStream();
             } catch (IOException e) {
                 Log.d("Monitor", e.toString());
             }
             this.inputStream = tempInput;
-            this.outputStream = tempOutput;
+            //this.outputStream = tempOutput;
         }
 
         public void run() {
@@ -322,11 +321,6 @@ public class MainActivity extends AppCompatActivity {
 
                 while (true) {
                     try {
-                        /**int i = 0;
-                        while (i < 29) {
-                            buffer[i] = (byte) inputStream.read();
-                            i++;
-                        }*/
                         int i = 0;
                         while (i < 26) {
                             buffer[i] = (byte) inputStream.read();
@@ -344,15 +338,17 @@ public class MainActivity extends AppCompatActivity {
             handler.obtainMessage(Constants.MENU_TO_CONNECT).sendToTarget();
         }
 
-        public void write(byte[] bytes) {
-            try {
-                outputStream.write(bytes);
-            } catch (IOException e) {
-                Log.d("Monitor", e.toString());
-            }
-        }
+        /**
+         * public void write(byte[] bytes) {
+         * try {
+         * outputStream.write(bytes);
+         * } catch (IOException e) {
+         * Log.d("Monitor", e.toString());
+         * }
+         * }
+         */
 
-        public void cancel() {
+        void cancel() {
             try {
                 btSocket.close();
             } catch (IOException e) {
